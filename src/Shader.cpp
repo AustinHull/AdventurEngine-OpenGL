@@ -1,4 +1,4 @@
-#include <glad/glad.h> // include glad to get all the required OpenGL headers
+#include "../include/glad/glad.h" // include glad to get all the required OpenGL headers
 #include "../include/Shader.h"
   
 #include <string>
