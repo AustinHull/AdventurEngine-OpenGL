@@ -11,7 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glm/glm.hpp>
-#define STB_IMAGE_IMPLEMENTATION
+#include <filesystem>
+//#define STB_IMAGE_IMPLEMENTATION
 #include "../include/stb_image.h"
 using namespace glm;
 
@@ -76,15 +77,15 @@ int main()
     // ------------------------------------------------------------------
     float vertices[] = {
         // positions          // colors           // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
+        -0.5f,  -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+        -0.5f, 0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        0.5f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        0.5f,  -0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
     };
 
     unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
+        0, 2, 1, // first triangle
+        0, 3, 2  // second triangle
     };
 
     // vertex shader
@@ -114,7 +115,7 @@ int main()
     glEnableVertexAttribArray(1);
 
     // texture attributes
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     // load and create textures
@@ -131,6 +132,45 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture, generate mipmaps
+    int width; // = 512;
+    int height; // = 512;
+    int nrChannels; // = 3;
+    //stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+    unsigned char *data = stbi_load("/home/monobunny/AdventurEngine-OpenGL/include/textures/containerImage.jpg", &width, &height, &nrChannels, 0);
+
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else 
+    {
+        std::cout << "Failed to initialize/load texture data!" << std::endl;
+        if(stbi_failure_reason()) 
+        {
+            std::cout << stbi_failure_reason() << std::endl;
+        }
+    }
+
+    stbi_image_free(data);
+
+    // texture 2
+    //glGenTextures(1, &texture2);
+    //glBindTexture(GL_TEXTURE_2D, texture2);
+    // set texturewrap parameters
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering params
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture, generate mipmaps
+    // data = 
+
+    shaderLoader.use(); // don't forget to activate/use the shader before setting uniforms!
+    // either set it manually like so:
+    glUniform1i(glGetUniformLocation(shaderLoader.ID, "texture1"), 0);
+    // or set it via the texture class
+    //shaderLoader.setInt("aTexCoord", 1);
 
 
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -164,14 +204,20 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+
         // draw our first triangle
         // glUseProgram(shaderProgramOrange);
         shaderLoader.use();
         //shaderLoader.setFloat("xOffsetUniform", globalOffsetX);
         //shaderLoader.setFloat("yOffsetUniform", globalOffsetY);
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        
+        // Render container 
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glUseProgram(shaderProgramYellow);
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(VAO[1]); // no need to unbind it every time 
@@ -195,6 +241,7 @@ int main()
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    
     //glDeleteProgram(shaderProgramOrange);
     //glDeleteProgram(shaderProgramYellow);
 
