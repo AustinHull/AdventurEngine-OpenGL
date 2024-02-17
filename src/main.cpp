@@ -22,8 +22,8 @@ void processInput(GLFWwindow *window);
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-float globalOffsetX = 0;
-float globalOffsetY = 0;
+float positionOffsetX = 0;
+float positionOffsetY = 0;
 
 int main()
 {
@@ -135,7 +135,7 @@ int main()
     int width; // = 512;
     int height; // = 512;
     int nrChannels; // = 3;
-    //stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     unsigned char *data = stbi_load("/home/monobunny/AdventurEngine-OpenGL/include/textures/containerImage.jpg", &width, &height, &nrChannels, 0);
 
@@ -168,9 +168,9 @@ int main()
 
     shaderLoader.use(); // don't forget to activate/use the shader before setting uniforms!
     // either set it manually like so:
-    glUniform1i(glGetUniformLocation(shaderLoader.ID, "texture1"), 0);
+    // glUniform1i(glGetUniformLocation(shaderLoader.ID, "texture1"), 0);
     // or set it via the texture class
-    //shaderLoader.setInt("aTexCoord", 1);
+    shaderLoader.setInt("texture1", 0);
 
 
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -211,8 +211,8 @@ int main()
         // draw our first triangle
         // glUseProgram(shaderProgramOrange);
         shaderLoader.use();
-        //shaderLoader.setFloat("xOffsetUniform", globalOffsetX);
-        //shaderLoader.setFloat("yOffsetUniform", globalOffsetY);
+        shaderLoader.setFloat("positionOffsetX", positionOffsetX);
+        shaderLoader.setFloat("positionOffsetY", positionOffsetY);
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         
         // Render container 
@@ -266,22 +266,22 @@ void processInput(GLFWwindow *window)
 
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         // A key pressed, rotate test element Counter-clockwise.
-        globalOffsetX += 0.01;
+        positionOffsetX += 0.01;
     }
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         // A key pressed, rotate test element Counter-clockwise.
-        globalOffsetX -= 0.01;
+        positionOffsetX -= 0.01;
     }
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         // A key pressed, rotate test element Counter-clockwise.
-        globalOffsetY += 0.01;
+        positionOffsetY += 0.01;
     }
 
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         // A key pressed, rotate test element Counter-clockwise.
-        globalOffsetY -= 0.01;
+        positionOffsetY -= 0.01;
     }
 }
 
