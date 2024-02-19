@@ -135,9 +135,9 @@ int main()
     int width; // = 512;
     int height; // = 512;
     int nrChannels; // = 3;
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    // stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char *data = stbi_load("/home/monobunny/AdventurEngine-OpenGL/include/textures/containerImage.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("include/textures/containerImage.jpg", &width, &height, &nrChannels, 0);
 
     if (data)
     {
@@ -155,22 +155,39 @@ int main()
     stbi_image_free(data);
 
     // texture 2
-    //glGenTextures(1, &texture2);
-    //glBindTexture(GL_TEXTURE_2D, texture2);
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
     // set texturewrap parameters
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // set texture filtering params
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture, generate mipmaps
     // data = 
+    data = stbi_load("include/textures/awesomeface.png", &width, &height, &nrChannels, 0);
+
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else 
+    {
+        std::cout << "Failed to initialize/load texture data!" << std::endl;
+        if(stbi_failure_reason()) 
+        {
+            std::cout << stbi_failure_reason() << std::endl;
+        }
+    }
+
+    stbi_image_free(data);
 
     shaderLoader.use(); // don't forget to activate/use the shader before setting uniforms!
     // either set it manually like so:
     // glUniform1i(glGetUniformLocation(shaderLoader.ID, "texture1"), 0);
     // or set it via the texture class
     shaderLoader.setInt("texture1", 0);
+    shaderLoader.setInt("texture2", 1);
 
 
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -207,6 +224,8 @@ int main()
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
 
         // draw our first triangle
         // glUseProgram(shaderProgramOrange);
