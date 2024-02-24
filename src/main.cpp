@@ -24,6 +24,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 float positionOffsetX = 0;
 float positionOffsetY = 0;
+float mixTexture = 0.2;
 
 int main()
 {
@@ -84,8 +85,8 @@ int main()
     };
 
     unsigned int indices[] = {
-        0, 2, 1, // first triangle
-        0, 3, 2  // second triangle
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
     };
 
     // vertex shader
@@ -126,8 +127,8 @@ int main()
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
     // set texture-wrapping params
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // set texture-filtering params
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -232,6 +233,7 @@ int main()
         shaderLoader.use();
         shaderLoader.setFloat("positionOffsetX", positionOffsetX);
         shaderLoader.setFloat("positionOffsetY", positionOffsetY);
+        shaderLoader.setFloat("mixTexture", mixTexture);
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         
         // Render container 
@@ -301,6 +303,18 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         // A key pressed, rotate test element Counter-clockwise.
         positionOffsetY -= 0.01;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        if (mixTexture < 1.0) {
+            mixTexture += 0.001;
+        }
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
+        if (mixTexture > 0.0) {
+            mixTexture -= 0.001;
+        }
     }
 }
 
