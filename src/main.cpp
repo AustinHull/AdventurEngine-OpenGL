@@ -11,8 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <filesystem>
-//#define STB_IMAGE_IMPLEMENTATION
+// #define STB_IMAGE_IMPLEMENTATION
 #include "../include/stb_image.h"
 using namespace glm;
 
@@ -58,8 +60,10 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
-    ImGui_ImplOpenGL3_Init();
+    ImGui_ImplOpenGL3_Init("#version 460");
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -144,8 +148,7 @@ int main()
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
-    } else 
-    {
+    } else {
         std::cout << "Failed to initialize/load texture data!" << std::endl;
         if(stbi_failure_reason()) 
         {
@@ -172,8 +175,7 @@ int main()
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
-    } else 
-    {
+    } else {
         std::cout << "Failed to initialize/load texture data!" << std::endl;
         if(stbi_failure_reason()) 
         {
@@ -207,55 +209,59 @@ int main()
 
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window))
-    {
+    bool debugFlag = false; // Primarily just used as a means of seperately testing ImGui window components from the GLFW and OpenGL components from the base layer of the engine app.
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
         // input
         // -----
         processInput(window);
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        if (debugFlag) {
+            ImGui::ShowDemoWindow();
+        } else {
+            static float f = 0.0;
+            ImGui::Begin("Hello World");
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Checkbox("Demo Window", &debugFlag);      // Edit bools storing our window open/close state
+            ImGui::End();
 
-        // render
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+            // render
+            // ------
+            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-        // bind textures on corresponding texture units
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+            // bind textures on corresponding texture units
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture1);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // draw our first triangle
-        // glUseProgram(shaderProgramOrange);
-        shaderLoader.use();
-        shaderLoader.setFloat("positionOffsetX", positionOffsetX);
-        shaderLoader.setFloat("positionOffsetY", positionOffsetY);
-        shaderLoader.setFloat("mixTexture", mixTexture);
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        
-        // Render container 
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        // glUseProgram(shaderProgramYellow);
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        // glBindVertexArray(VAO[1]); // no need to unbind it every time 
-        // glDrawArrays(GL_TRIANGLES, 0, 3);
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
+            // draw our first triangle
+            // glUseProgram(shaderProgramOrange);
+            shaderLoader.use();
+            shaderLoader.setFloat("positionOffsetX", positionOffsetX);
+            shaderLoader.setFloat("positionOffsetY", positionOffsetY);
+            shaderLoader.setFloat("mixTexture", mixTexture);
+            // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+            // Render container
+            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            // glUseProgram(shaderProgramYellow);
+            // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            // glBindVertexArray(VAO[1]); // no need to unbind it every time
+            // glDrawArrays(GL_TRIANGLES, 0, 3);
+            // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+            // -------------------------------------------------------------------------------
+        }
         // Rendering
         // (Your code clears your framebuffer, renders your other stuff etc.)
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         // (Your code calls glfwSwapBuffers() etc.)
-
         glfwSwapBuffers(window);
-        glfwPollEvents();
-
-        //ImGui::ShowDemoWindow(); // Show demo window! :)
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
