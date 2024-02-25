@@ -207,6 +207,8 @@ int main()
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // std::cout << vec.x << vec.y << vec.z << std::endl;
+
     // render loop
     // -----------
     bool debugFlag = false; // Primarily just used as a means of seperately testing ImGui window components from the GLFW and OpenGL components from the base layer of the engine app.
@@ -233,6 +235,13 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // Create transform
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        shaderLoader.use();
+        shaderLoader.setMat4("transform", trans);
 
         // draw our first triangle
         // glUseProgram(shaderProgramOrange);
