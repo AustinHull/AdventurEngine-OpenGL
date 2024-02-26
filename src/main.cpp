@@ -213,6 +213,10 @@ int main()
     // -----------
     bool debugFlag = false; // Primarily just used as a means of seperately testing ImGui window components from the GLFW and OpenGL components from the base layer of the engine app.
     while (!glfwWindowShouldClose(window)) {
+        // input
+        // -----
+        processInput(window);
+        
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -236,30 +240,35 @@ int main()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // Create transform
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        shaderLoader.use();
-        shaderLoader.setMat4("transform", trans);
-
-        // draw our first triangle
-        // glUseProgram(shaderProgramOrange);
-        shaderLoader.use();
         shaderLoader.setFloat("positionOffsetX", positionOffsetX);
         shaderLoader.setFloat("positionOffsetY", positionOffsetY);
         shaderLoader.setFloat("mixTexture", mixTexture);
+
+        // Create transform
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        // shaderLoader.use();
+        shaderLoader.setMat4("transform", trans);
+
+        // draw our first triangle
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         // Render container
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        glfwPollEvents();
-        // input
-        // -----
-        processInput(window);
+        // second transformation
+        // ---------------------
+        trans = glm::mat4(1.0f); // reset it to identity matrix
+        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+        float scaleAmount = static_cast<float>(sin(glfwGetTime()));
+        trans = glm::scale(trans, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
+        shaderLoader.setMat4("transform", trans); // this time take the matrix value array's first element as its memory pointer value
+
+        // now with the uniform matrix being replaced with new transformations, draw it again.
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
         // -------------------------------------------------------------------------------
         // Rendering
         // (Your code clears your framebuffer, renders your other stuff etc.)
@@ -267,6 +276,8 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         // (Your code calls glfwSwapBuffers() etc.)
         glfwSwapBuffers(window);
+        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        glfwPollEvents();
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
